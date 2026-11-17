@@ -29,7 +29,10 @@ def main():
     toc = addon / "ShamanBars.toc"
     metadata = toc.read_text(encoding="utf-8-sig")
     assert re.search(r"^## Interface: 16001$", metadata, re.M), "Wrong client interface"
-    assert re.search(r"^## SavedVariablesPerCharacter: ShamanBarsBackup$", metadata, re.M)
+    saved = re.search(r"^## SavedVariablesPerCharacter: (.+)$", metadata, re.M)
+    assert saved and {"ShamanBarsBackup", "ShamanBarsOriginalBackup", "ShamanBarsDiagnostics"} <= {
+        name.strip() for name in saved.group(1).split(",")
+    }, "Missing per-character recovery/diagnostic declarations"
     references = [
         line.strip()
         for line in metadata.splitlines()

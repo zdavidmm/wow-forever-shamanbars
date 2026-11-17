@@ -16,14 +16,27 @@ not Retail, Classic Era, or a full WoW installation.
   timer, spell-learning, combat, or deferred-combat automation.
 - Refuse writes during combat or with an occupied cursor. Use the default
   Blizzard main bar on page 1; do not silently remap other UI addons.
-- Manage only slots 1-10 and 61-70. Preserve consumables, professions, macros,
-  unrelated spells, unrelated slots and non-target keys.
+- Resolve MainActionBar and MultiBar7 buttons using CalculateAction, cached
+  action, owning bar and bindingAction/commandName. Never infer bars by screen
+  row or assume the Shift bar is MultiBarBottomLeft. Preserve other bars.
+- If a target contains an unrelated action, preserve it in a verified empty,
+  visible utility button and record the relocation before any writes. Refuse
+  the entire plan if space or mapping cannot be verified; never overwrite an
+  occupied utility slot.
 - Use learned active spellbook entries; skip future, unknown, passive and
-  off-spec spells. Do not insert hardcoded spell IDs into the production layout.
-- Keep Auto Attack on 1. Stormstrike upgrades 5 only when learned.
+  off-spec spells. Family anchor IDs may resolve localized client names; place
+  only actual learned spellbook entries. Choose ranks deterministically, not
+  by traversal order.
+- Keep the requested layout: Auto Attack on 1, Fire Nova on 5, Searing Totem
+  on F and Shift-2 (intentional duplicate), Tremor Totem on Shift-6.
 - Verify the actual placed spell ID before assigning its key.
-- Save bindings character-specifically. Preserve the first pre-apply snapshot
-  across repeated applies and keep restore conservative and recoverable.
+- Make requested keys the primary displayed bindings while preserving other
+  shortcuts where possible. Capture and restore affected command key order,
+  not just the requested key strings. Never save account-wide bindings.
+- Prepare and persist the full per-character snapshot via an explicit reload
+  BEFORE first apply. Never apply on reload. Preserve original snapshots, refuse
+  stale mappings and provide conservative rollback. Recover version-1 snapshots
+  before using the corrected layout; retain an immutable original archive.
 - Use Lua 5.1-compatible syntax and the Forever APIs, not generic Retail guesses.
 
 ## Development checks

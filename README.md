@@ -1,11 +1,13 @@
 # WoW Forever ShamanBars
 
 A manual action-bar and keybinding setup addon for an Enhancement Shaman in
-**WoW Forever 1.60.1**, interface **16001**. The initial layout targets leveling,
-skips unlearned spells, and supports learning Stormstrike later.
+**WoW Forever 1.60.1**, interface **16001**. The layout targets leveling, skips
+unlearned spells and uses the highest learned rank without assuming book order.
 
-The addon is ready to preview in-game. Lua 5.1 syntax and mocked behavior have
-been tested; **no live in-game testing has been performed**.
+> **Status: experimental; in-game verification pending.** Version 1.1.0 passes
+> Lua 5.1 syntax checks and 53 mocked behavior tests, but these do not prove the
+> live layout works. Earlier 1.0.x versions misplaced actions; preserve your
+> original snapshot and follow the recovery instructions before applying.
 
 ## Install and use
 
@@ -15,22 +17,32 @@ been tested; **no live in-game testing has been performed**.
 3. Restart Forever and enable **ShamanBars - Enhancement Leveling Setup** in the
    character-selection AddOns list.
 4. On your Shaman, select main bar page 1, leave combat and empty your cursor.
-   Enable Action Bar 2 in Options > Action Bars if hidden.
-5. Preview before applying:
+   Keep the existing Shift bar, **MultiBar7 / Action Bar 8**, enabled.
+5. If upgrading from 1.0.x, first run `/shamanbars restore`, then `/reload`.
+   This recovers the old snapshot, including utility slots that version targeted.
+6. Preview, prepare a durable backup, reload to save it, and deliberately apply:
 
 ```text
 /shamanbars preview
+/shamanbars prepare
+/reload
+/shamanbars preview
 /shamanbars apply
+/shamanbars debug
 /reload
 ```
 
-Only slots **1-10** and **61-70** are considered. Items, macros, professions and
-unrelated spells are protected, including in those slots. Requested keys can
-replace existing movement/UI bindings; read preview before applying.
+Slots are resolved from actual visible **MainActionBar** and **MultiBar7**
+buttons, not screen row numbers. In the verified default UI these are 1-10 and
+169-178, not 61-70. Other bars are preserved. An unrelated action occupying a
+target is moved only to a snapshotted, empty, visible utility button. Preview
+shows each relocation; without sufficient space, the entire plan is refused.
+Requested keys become primary displayed hotkeys; secondary shortcuts are retained
+where possible. Review changes to movement/UI bindings before applying.
 
-Nothing applies on login, reload, learning spells or leaving combat. After
-learning Stormstrike, preview/apply again: key **5** upgrades while Auto Attack
-remains on **1**.
+Nothing applies on login, reload, learning spells or leaving combat. Reapplying
+an unchanged layout performs no pickups or binding writes. Auto Attack remains
+on **1** and Fire Nova on **5**; Stormstrike does not silently replace it.
 
 Undo on the same character, with the addon enabled and outside combat:
 
@@ -39,14 +51,17 @@ Undo on the same character, with the addon enabled and outside combat:
 /reload
 ```
 
-The first pre-apply slot/key snapshot is retained across repeated applies and
-saved per character at reload/logout. A crash before that save can lose the
-snapshot. Restore preserves items, macros and unrelated spells placed later and
-reports skips. Bindings remain character-specific. Action bars are server-stored,
-so a disk-only WTF backup cannot guarantee bar recovery.
+The prepared snapshot must be saved by reload **before** first apply. It retains
+the original actions, utility relocations and binding order across repeated
+applies. Restore refuses unrelated replacements or stale mappings instead of
+overwriting them. Bindings remain character-specific. Version-1 recovery can only
+restore what that older snapshot recorded, not missing primary-key order.
+Action bars are server-stored, so WTF alone cannot guarantee bar recovery.
 
 See [the addon README](ShamanBars/README.md) for the full layout, safeguards,
-recovery details and troubleshooting. Spell matching expects an English client.
+recovery details and troubleshooting. `/shamanbars debug` reports actual visible
+button slots, spell IDs, learned selections and binding order, and saves local
+diagnostics at the next reload. Do not upload character SavedVariables.
 
 ## Development
 
@@ -60,7 +75,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m tools.validate
 ```
 
-The validator checks TOC references and Lua 5.1 syntax, then runs 34 mocked
+The validator checks TOC references and Lua 5.1 syntax, then runs 53 mocked
 behavior tests covering manual invocation, combat refusal, protected slots,
 unlearned spells, action placement verification, keybindings and rollback.
 The default validation is offline after dependencies are installed.

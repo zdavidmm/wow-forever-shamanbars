@@ -7,31 +7,30 @@ only when warranted.
 ## Scope and architecture
 
 ShamanBars targets **WoW Forever 1.60.1, interface 16001**, using Lua 5.1 and the
-default Blizzard action bars. Spell-name matching expects an English client.
+default Blizzard action bars. Family IDs resolve localized names from the client;
+placement uses learned spellbook entries and deterministic highest-rank selection.
 
 Only `ShamanBars` is installed into WoW. Its TOC loads `ShamanBars.lua` and declares
-`ShamanBarsBackup` as a per-character SavedVariable. Python, tests, and validation
-dependencies stay outside the installed addon.
+the active backup, original archive and diagnostics as per-character
+SavedVariables. Python, tests, and validation dependencies stay outside the addon.
 
 The addon is a single Lua module with local helpers. Loading it only registers
-`/shamanbars` and `/sbars`; slash-command dispatch invokes preview, apply, or
-restore. The empty command previews. There are no event-driven configuration
-changes.
+`/shamanbars` and `/sbars`; commands include preview, prepare, apply, restore and
+debug. The empty command previews. No login, event or reload applies a layout.
 
-`PLAN` couples each managed slot to its key, Blizzard binding command, and ordered
-spell-name fallbacks. `MANAGED_NAMES` is derived from all those names.
-`findKnownSpells()` scans the player spellbook to resolve learned active entries
-and their spell/base IDs. Preview and apply share spell selection and slot
-protection; apply snapshots a slot before placement and binds its key only after
-placement verification.
+`PLAN` describes logical buttons, keys and spell-family fallbacks, not fixed slots.
+`resolve()` uses the real MainActionBar and MultiBar7 button CalculateAction,
+cached action, owning bar and binding command. Utility bars at 61-72 must not be
+mistaken for this character's existing Shift bar (normally MultiBar7 at 169-180).
+Never replace runtime resolution with those example numbers.
 
-The version-1 backup stores original spell IDs in `slots` and original binding
-commands in `keys`. A slot value of `0` means originally empty; a key value of
-`""` means originally unbound; `nil` means no pending snapshot entry. Repeated
-applies retain the first snapshot for each entry. Restore removes entries only
-after success, retaining skipped/failed work for retry and clearing the backup
-only when both tables are empty. SavedVariables persist at reload/logout;
-action bars are server-stored, so a disk-only WTF backup is not full bar recovery.
+Version-2 snapshots store resolved entries, original action descriptors, any
+relocation into an empty visible utility slot, and original affected binding
+groups including primary/secondary key order. Prepare writes only the snapshot;
+an explicit reload is required before apply can mutate anything. Keep originals
+across reapplication. Version-1 snapshots recover their old absolute slots and
+recorded keys, retain an original archive and warn that primary key order was not
+captured. Action bars are server-stored; WTF alone is not reliable bar recovery.
 
 ## Non-negotiable behavior
 
@@ -40,19 +39,20 @@ action bars are server-stored, so a disk-only WTF backup is not full bar recover
 - Refuse unsafe contexts: non-Shaman, combat, occupied cursor, main bar page
   other than 1, or remapped bars. Stop if combat starts during an operation;
   never queue a retry.
-- Manage only slots **1-10 and 61-70**. Replace only empty slots or currently
-  learned managed spells. Preserve items, macros, professions, unrelated spells,
-  other slots, and non-target keys. Restore must protect items, macros, and
-  unrelated spells added later, retaining unresolved snapshots.
-- Keep Auto Attack on **1**; learned Stormstrike upgrades **5**. Resolve ordered
-  fallbacks from learned active spellbook entries, skipping unknown, future,
-  passive, and off-spec entries. Do not hardcode spell IDs in the production plan.
+- Manage only the resolved first ten MainActionBar and MultiBar7 buttons and
+  explicitly snapshotted moves to empty visible utility buttons. Never sweep
+  unrelated bars to remove pre-existing duplicates. Refuse stale or occupied
+  relocation destinations before any writes.
+- Keep the exact documented keys: Auto Attack 1, Fire Nova 5, Searing Totem F and
+  Shift-2, Tremor Totem Shift-6. Skip unknown/future/passive/off-spec spells
+  without shifting positions or changing their keys.
 - Confirm the actual placed action is the requested spell ID or its base ID
   before assigning the key. Pickup/placement/binding failures must not be
   reported as successes.
 - Save bindings with `Enum.BindingSet.Character`, never the account binding set.
-  Restore leaves bindings character-specific. Preview must remain read-only and
-  disclose conflicts with requested keys, including movement/UI bindings.
+  Restore leaves bindings character-specific. Preview is read-only and shows
+  actual slots, current/desired spell IDs, relocations and binding order changes.
+  Debug records only local diagnostics; never commit actual diagnostic snapshots.
 - Use the Forever APIs and Lua 5.1 syntax. Keep missing-API checks fail-closed and
   mocks aligned with the actual client API.
 
