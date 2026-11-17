@@ -2,6 +2,6 @@
 ## Title: ShamanBars - Enhancement Leveling Setup
 ## Notes: One-time action bar and keybind organizer for WoW Forever shamans.
 ## Author: ChatGPT
-## Version: 1.1.0
+## Version: 1.1.1
 ## SavedVariablesPerCharacter: ShamanBarsBackup, ShamanBarsOriginalBackup, ShamanBarsDiagnostics
 ShamanBars.lua

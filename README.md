@@ -4,8 +4,8 @@ A manual action-bar and keybinding setup addon for an Enhancement Shaman in
 **WoW Forever 1.60.1**, interface **16001**. The layout targets leveling, skips
 unlearned spells and uses the highest learned rank without assuming book order.
 
-> **Status: experimental; in-game verification pending.** Version 1.1.0 passes
-> Lua 5.1 syntax checks and 53 mocked behavior tests, but these do not prove the
+> **Status: experimental; live application verification pending.** Version 1.1.1 passes
+> Lua 5.1 syntax checks and 56 mocked behavior tests, but these do not prove the
 > live layout works. Earlier 1.0.x versions misplaced actions; preserve your
 > original snapshot and follow the recovery instructions before applying.
 
@@ -37,6 +37,9 @@ buttons, not screen row numbers. In the verified default UI these are 1-10 and
 169-178, not 61-70. Other bars are preserved. An unrelated action occupying a
 target is moved only to a snapshotted, empty, visible utility button. Preview
 shows each relocation; without sufficient space, the entire plan is refused.
+If needed, enable an empty **Action Bar 6 (MultiBar5)** in Options > Action Bars
+before preparing. Only empty buttons on enabled, actually visible default utility
+bars can be used; ShamanBars never enables bars or changes their positions itself.
 Requested keys become primary displayed hotkeys; secondary shortcuts are retained
 where possible. Review changes to movement/UI bindings before applying.
 
@@ -75,7 +78,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m tools.validate
 ```
 
-The validator checks TOC references and Lua 5.1 syntax, then runs 53 mocked
+The validator checks TOC references and Lua 5.1 syntax, then runs 56 mocked
 behavior tests covering manual invocation, combat refusal, protected slots,
 unlearned spells, action placement verification, keybindings and rollback.
 The default validation is offline after dependencies are installed.

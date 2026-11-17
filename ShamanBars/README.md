@@ -1,4 +1,4 @@
-# ShamanBars 1.1.0 - WoW Forever 1.60.1
+# ShamanBars 1.1.1 - WoW Forever 1.60.1
 
 A manual layout installer for the default Blizzard action bars. It does not cast
 spells, run on login, or queue changes for leaving combat.
@@ -104,9 +104,12 @@ off-spec entries are excluded. Rank choice does not depend on book traversal ord
   targets. Buttons 11-12, hidden pages, professions and consumable bars are not
   swept or cleared. Pre-existing shortcuts outside the managed layout remain.
 - If an unrelated spell, item or macro occupies a target, preview names its move
-  to an **empty, visible** MultiBarBottomLeft/BottomRight utility button. The move
+  to an **empty, visible** default utility button outside the main and Shift bars. The move
   is backed up and reversed by restore. An occupied utility destination is never
-  overwritten. With insufficient space, prepare refuses the entire plan.
+  overwritten. With insufficient space, prepare refuses the entire plan. Enable
+  an empty Action Bar 6 (MultiBar5), or another unused default utility bar, in
+  Options > Action Bars before preparing. The addon does not enable or reposition
+  any bar itself and cannot use bars hidden by visibility rules.
 - Requested keys become the displayed primary bindings. Existing secondary keys
   are retained unless they are another requested layout key. Other affected
   command bindings are snapshotted with their original order. Movement/UI keys
@@ -136,7 +139,8 @@ unrelated settings and does not reliably recover server-stored action bars.
 ## Diagnostics and verification
 
 `/shamanbars debug` prints visible bar names, button-to-slot mappings, actual
-spell IDs, binding commands and primary/secondary keys. It also reports selected
+spell IDs, binding commands and primary/secondary keys. Spell names are retained
+in the saved report as well. It also reports selected
 learned spell IDs/ranks/book indices and stores local `ShamanBarsDiagnostics` at
 the next reload. It does not move actions or bind keys. Do not publish that file.
 

@@ -42,9 +42,6 @@ local BARS = {
 local UTILITY = {
     {name="MultiBarBottomLeft", prefix="MultiBarBottomLeftButton"},
     {name="MultiBarBottomRight", prefix="MultiBarBottomRightButton"},
-}
-local OTHER_BARS = {
-    UTILITY[1], UTILITY[2],
     {name="MultiBarRight", prefix="MultiBarRightButton"},
     {name="MultiBarLeft", prefix="MultiBarLeftButton"},
     {name="MultiBar5", prefix="MultiBar5Button"}, {name="MultiBar6", prefix="MultiBar6Button"},
@@ -212,7 +209,7 @@ local function resolve()
             end
         end
     end
-    for _, spec in ipairs(OTHER_BARS) do
+    for _, spec in ipairs(UTILITY) do
         local bar = _G[spec.name]
         if visible(bar) then
             for index = 1, 12 do
@@ -262,7 +259,8 @@ local function buildSnapshot()
             assert(entry.before.kind == "spell" or entry.before.kind == "item" or
                 entry.before.kind == "macro", "Unsupported occupied target; move " .. entry.button .. " manually.")
             local destination = table.remove(empty, 1)
-            assert(destination, "No empty visible utility slots; free space before preparing. No changes made.")
+            assert(destination, "No empty visible utility slots; enable an empty utility bar (e.g. Action Bar 6) " ..
+                "or free space before preparing. No changes made.")
             entry.moveTo, entry.moveButton = destination.slot, destination.button
         end
     end
@@ -289,8 +287,11 @@ local function validateSnapshot(backup)
                 "Invalid utility relocation in snapshot.")
             local button = _G[entry.moveButton]
             local utilityBar = button and button.bar
-            assert(utilityBar and (utilityBar == _G.MultiBarBottomLeft or
-                utilityBar == _G.MultiBarBottomRight) and visible(utilityBar) and
+            local approved = false
+            for _, spec in ipairs(UTILITY) do
+                if utilityBar and utilityBar == _G[spec.name] then approved = true; break end
+            end
+            assert(approved and visible(utilityBar) and
                 buttonSlot(button) == entry.moveTo, "Utility bar mapping changed since backup.")
             seen[entry.moveTo] = true
         end
@@ -598,7 +599,7 @@ local function debug()
     ready()
     local report = {page=C_ActionBar.GetActionBarPage(), bars={}}
     local specs = {BARS[1], BARS[2]}
-    for _, spec in ipairs(OTHER_BARS) do specs[#specs+1] = spec end
+    for _, spec in ipairs(UTILITY) do specs[#specs+1] = spec end
     say("DEBUG page=" .. report.page .. "; no bars or bindings changed.")
     for _, spec in ipairs(specs) do
         local bar = _G[spec.name]
@@ -618,6 +619,8 @@ local function debug()
                         record.buttons[#record.buttons+1] = data
                         if ok then
                             data.action = action(slot)
+                            data.actionName = data.action.kind == "spell" and
+                                C_Spell.GetSpellName(data.action.id) or nil
                             say(data.button .. " slot=" .. slot .. " " .. actionText(data.action) ..
                                 " bind=" .. command .. " keys=[" .. table.concat(data.keys, ", ") .. "]")
                         else

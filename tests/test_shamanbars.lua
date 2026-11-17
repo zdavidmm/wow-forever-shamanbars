@@ -181,6 +181,9 @@ local function world()
     bar("MultiBar7","MultiBar7Button",169,"MULTIACTIONBAR7BUTTON")
     bar("MultiBarBottomLeft","MultiBarBottomLeftButton",61,"MULTIACTIONBAR1BUTTON")
     bar("MultiBarBottomRight","MultiBarBottomRightButton",49,"MULTIACTIONBAR2BUTTON")
+    function s.extraUtility()
+        bar("MultiBar5","MultiBar5Button",145,"MULTIACTIONBAR5BUTTON")
+    end
     function s.load()
         local chunk,err=loadstring(source,"@ShamanBars.lua")
         expect(chunk,err); setfenv(chunk,env); chunk()
@@ -314,6 +317,38 @@ test("no visible utility space fails preparation without any partial changes",fu
     s.env.MultiBarBottomLeft.shown=false; s.env.MultiBarBottomRight.shown=false
     s.command("prepare")
     expect(#s.writes == 0 and not s.env.ShamanBarsBackup and s.contains("No empty visible utility slots"))
+end)
+test("an additional visible default bar preserves overflowing utility actions and restores them",function()
+    local s=world(); s.actions[7]={"spell",556}
+    s.env.MultiBarBottomLeft.shown=false; s.env.MultiBarBottomRight.shown=false
+    s.extraUtility()
+    local original=copy(s.actions); s.setup()
+    expect(s.env.ShamanBarsBackup.entries[7].moveTo == 145)
+    expect(equal(s.actions[145],{"spell",556}) and equal(s.actions[7],{"spell",8004}))
+    s.command("restore")
+    expect(equal(original,s.actions) and s.env.ShamanBarsBackup.state == "restored")
+end)
+test("disabled or visibility-hidden additional bars never receive utility actions",function()
+    for _,condition in ipairs({"disabled","hidden"}) do
+        local s=world(); s.actions[7]={"spell",556}
+        s.env.MultiBarBottomLeft.shown=false; s.env.MultiBarBottomRight.shown=false
+        s.extraUtility()
+        if condition == "disabled" then s.env.MultiBar5.shown=false
+        else s.env.MultiBar5.hiddenByVisibility=true end
+        s.command("prepare")
+        expect(#s.writes == 0 and not s.env.ShamanBarsBackup and s.contains("No empty visible utility slots"))
+    end
+end)
+test("additional utility bars preserve occupied buttons and must stay visible through application",function()
+    local s=world(); s.actions[7]={"spell",556}
+    s.env.MultiBarBottomLeft.shown=false; s.env.MultiBarBottomRight.shown=false
+    s.extraUtility(); s.actions[145]={"item",117}
+    s.command("prepare"); s.load()
+    expect(s.env.ShamanBarsBackup.entries[7].moveTo == 146)
+    s.env.MultiBar5.hiddenByVisibility=true; s.command("apply")
+    expect(#s.writes == 0 and s.contains("Utility bar mapping changed"))
+    s.env.MultiBar5.hiddenByVisibility=nil; s.command("apply")
+    expect(equal(s.actions[145],{"item",117}) and equal(s.actions[146],{"spell",556}))
 end)
 test("an enabled secondary bar hidden by visibility rules is not treated as visible",function()
     local s=world(); s.env.MultiBar7.hiddenByVisibility=true
@@ -469,6 +504,7 @@ test("debug records actual visible slots, learned IDs and key order without bar/
     expect(#s.writes == 0 and not s.env.ShamanBarsBackup and s.env.ShamanBarsDiagnostics)
     expect(s.contains("MultiBar7Button1 slot=169") and s.contains("MultiBarBottomLeftButton1 slot=61"))
     expect(s.env.ShamanBarsDiagnostics.spells.lesser.id == 8004)
+    expect(s.env.ShamanBarsDiagnostics.bars[1].buttons[1].actionName == "Attack")
 end)
 test("snapshot cannot be overwritten by preparing a second time",function()
     local s=world(); s.command("prepare"); local before=copy(s.env.ShamanBarsBackup)
