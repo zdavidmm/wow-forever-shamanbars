@@ -74,15 +74,21 @@ exact validated Forever build, with network access:
 
 API reference: [Forever 1.60.1 (70938), pinned UI source commit](https://github.com/Gethe/wow-ui-source/commit/bebcb6bf309cf41b41bd74f8ca651e6a105b2676).
 API-name checks do not replace in-game validation or prove protected calls will
-succeed. GitHub Actions runs syntax, mocked behavior and API-name checks on both
-Windows and Linux.
+succeed.
+
+`ci\validate.yml` is an **inactive GitHub Actions template** for Windows and Linux.
+To enable it, copy it to `.github\workflows\validate.yml` and push using GitHub
+credentials with permission to create workflows. It is not active because the
+credential used for the initial upload does not have the `workflow` OAuth scope.
+Local validation is fully available without that permission.
 
 ## Repository layout
 
 - `ShamanBars`: the installable addon; keep the folder name and TOC aligned.
 - `tests`: simulated WoW API and behavior tests, not character/account data.
 - `tools`: portable validation runner using Lupa's Lua 5.1 runtime.
-- `.github`: CI and Copilot contributor instructions.
+- `.github`: Copilot contributor instructions.
+- `ci`: the inactive cross-platform validation workflow template.
 - `AGENTS.md`: shared guidance for AI contributors.
 
 This repository must not contain a WoW client, WTF/SavedVariables, account data,

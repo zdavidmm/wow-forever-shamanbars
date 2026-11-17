@@ -74,8 +74,10 @@ Default validation is offline after setup: it checks TOC references, interface,
 backup metadata, addon nesting, Lua syntax, and the mocked behavior suite.
 `--check-apis` additionally requires network access and checks names in
 `C_SpellBook`, `C_Spell`, and `C_ActionBar` against the pinned public UI source for
-Forever build 70938 (`UI_COMMIT` in `tools\validate.py`). CI runs this check on
-Windows and Linux with Python 3.10, followed by `git diff --check`.
+Forever build 70938 (`UI_COMMIT` in `tools\validate.py`). `ci\validate.yml` is an
+inactive workflow template for Windows and Linux with Python 3.10. It must be
+copied into `.github\workflows` and uploaded with a workflow-authorized credential
+before GitHub Actions can run it. Do not report the template as active CI.
 `.gitattributes` specifies LF for source, metadata, and documentation.
 
 The suite is small; run the whole harness rather than modifying it to select

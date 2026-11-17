@@ -1,3 +1,4 @@
+# Inactive template: copy to .github/workflows/validate.yml to enable.
 name: Validate addon
 
 on:
